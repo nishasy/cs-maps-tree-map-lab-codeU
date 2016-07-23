@@ -22,6 +22,7 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 
 	private int size = 0;
 	private Node root = null;
+	private Set<K> set = new LinkedHashSet<K>();
 
 	/**
 	 * Represents a node in the tree.
@@ -73,7 +74,32 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 		
 		// the actual search
         // TODO: Fill this in.
-        return null;
+
+        return findNodeHelper(target, root);
+	}
+
+	private Node findNodeHelper(Object target, Node lookNode) {
+		if (equals(target, lookNode.key)) {
+			return lookNode;
+		}
+
+		if (lookNode == null) {
+			return null;
+		}
+
+		if (((Comparable)(target)).compareTo((Comparable)(lookNode.key)) < 0) {
+			if (lookNode.left == null) {
+				return null;
+			}
+			return findNodeHelper(target, lookNode.left);
+		} else if (((Comparable)(target)).compareTo((Comparable)(lookNode.key)) > 0) {
+			if (lookNode.right == null) {
+				return null;
+			}
+			return findNodeHelper(target, lookNode.right);
+		}
+
+		return null;
 	}
 
 	/**
@@ -92,7 +118,26 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 
 	@Override
 	public boolean containsValue(Object target) {
-		return false;
+		return containsValueHelper(target, root);
+	}
+
+	private boolean containsValueHelper(Object target, Node node) {
+		// TODO????
+
+		if (node == null) {
+			return false;
+		}
+
+		if (equals(target, node.value)) {
+			return true;
+		}
+
+		if (node.left == null) {
+			return containsValueHelper(target, node.right);
+		} else {
+			return containsValueHelper(target, node.left);
+		}
+
 	}
 
 	@Override
@@ -116,10 +161,24 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 
 	@Override
 	public Set<K> keySet() {
-		Set<K> set = new LinkedHashSet<K>();
         // TODO: Fill this in.
+		keySetHelper(root);
 		return set;
 	}
+
+	// fills in set
+	private void keySetHelper(Node node) {
+		if (node.left != null) {
+			keySetHelper(node.left);
+		}
+
+		set.add(node.key);
+
+		if (node.right != null) {
+			keySetHelper(node.right);
+		}
+	}
+
 
 	@Override
 	public V put(K key, V value) {
@@ -131,11 +190,38 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 			size++;
 			return null;
 		}
+
+		if (containsKey(key)) {
+			Node oldNode = findNode(key);
+			V val = oldNode.value;
+			oldNode.value = value;
+			return val;
+		}
+
 		return putHelper(root, key, value);
 	}
 
 	private V putHelper(Node node, K key, V value) {
         // TODO: Fill this in.
+
+		Node newNode = new Node(key, value);
+
+		if(((Comparable)key).compareTo((Comparable)(node.key)) < 0) {
+			if (node.left == null) {
+				node.left = newNode;
+				size++;
+			} else {
+				return putHelper(node.left, key, value);
+			}
+		} else if(((Comparable)key).compareTo((Comparable)(node.key)) > 0) {
+			if (node.right == null) {
+				node.right = newNode;
+				size++;
+			} else {
+				return putHelper(node.right, key, value);
+			}
+		}
+
         return null;
 	}
 
